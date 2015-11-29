@@ -17,7 +17,8 @@ object Settings {
     "-Xlint",
     "-unchecked",
     "-deprecation",
-    "-feature"
+    "-feature",
+    "-language:higherKinds"
   )
 
   /** Set some basic options when running the project with Revolver */
@@ -36,6 +37,7 @@ object Settings {
     val booPickle = "1.1.0"
     val diode = "0.1.0-SNAPSHOT"
     val uTest = "0.3.1"
+    val monocle = "1.1.1"
 
     val react = "0.14.3"
     val jQuery = "1.11.1"
@@ -45,6 +47,9 @@ object Settings {
     val playScripts = "0.3.0"
   }
 
+  def allowMacroAnnotations =
+    addCompilerPlugin(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full))
+
   /**
    * These dependencies are shared between JS and JVM projects
    * the special %%% function selects the correct version for each project
@@ -53,6 +58,19 @@ object Settings {
     "com.lihaoyi" %%% "autowire" % versions.autowire,
     "me.chrons" %%% "boopickle" % versions.booPickle,
     "com.lihaoyi" %%% "utest" % versions.uTest
+  ))
+
+  // These should be in sharedDependencies above but the JS build of Monocle
+  // is currently being separately maintained. When both the JVM and JS builds
+  // are published together these two vals can go in the bin and we can add it
+  // to sharedDependencies above.
+  val monocleJVM = Def.setting(Seq(
+    "com.github.julien-truffaut" %% "monocle-core" % versions.monocle,
+    "com.github.julien-truffaut" %% "monocle-macro" % versions.monocle
+  ))
+  val monocleJS = Def.setting(Seq(
+    "com.github.japgolly.fork.monocle" %%% "monocle-core" % versions.monocle,
+    "com.github.japgolly.fork.monocle" %%% "monocle-macro" % versions.monocle
   ))
 
   /** Dependencies only used by the JVM project */

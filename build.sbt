@@ -5,8 +5,12 @@ import sbt.Project.projectToRef
 lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared"))
   .settings(
     scalaVersion := Settings.versions.scala,
-    libraryDependencies ++= Settings.sharedDependencies.value
+    libraryDependencies ++= Settings.sharedDependencies.value,
+    // Let Monocle provide lenses using the @Lenses annotation
+    Settings.allowMacroAnnotations
   )
+  .jvmSettings(libraryDependencies ++= Settings.monocleJVM.value)
+  .jsSettings(libraryDependencies ++= Settings.monocleJS.value)
   // set up settings specific to the JS project
   .jsConfigure(_ enablePlugins ScalaJSPlay)
 
@@ -31,6 +35,8 @@ lazy val client: Project = (project in file("client"))
     jsDependencies ++= Settings.jsDependencies.value,
     // RuntimeDOM is needed for tests
     jsDependencies += RuntimeDOM % "test",
+    // Let Monocle provide lenses using the @Lenses annotation
+    Settings.allowMacroAnnotations,
     // yes, we want to package JS dependencies
     skip in packageJSDependencies := false,
     // use Scala.js provided launcher code to start the client app
@@ -54,6 +60,8 @@ lazy val server = (project in file("server"))
     scalacOptions ++= Settings.scalacOptions,
     libraryDependencies ++= Settings.jvmDependencies.value,
     commands += ReleaseCmd,
+    // Let Monocle provide lenses using the @Lenses annotation
+    Settings.allowMacroAnnotations,
     // connect to the client project
     scalaJSProjects := clients,
     pipelineStages := Seq(scalaJSProd),

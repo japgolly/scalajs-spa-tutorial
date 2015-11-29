@@ -5,6 +5,7 @@ import diode.react._
 import diode.util.Pot
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.prefix_<^._
+import monocle.macros.Lenses
 import spatutorial.client.components.Bootstrap._
 import spatutorial.client.components._
 import spatutorial.client.logger._
@@ -70,12 +71,17 @@ object TodoForm {
 
   case class Props(item: Option[TodoItem], submitHandler: (TodoItem, Boolean) => Callback)
 
+  @Lenses
   case class State(item: TodoItem, cancelled: Boolean = true)
+  object State {
+    val itemPriority = item composeLens TodoItem.priority
+    val itemContent  = item composeLens TodoItem.content
+  }
 
   class Backend(t: BackendScope[Props, State]) {
     def submitForm(): Callback = {
       // mark it as NOT cancelled (which is the default)
-      t.modState(s => s.copy(cancelled = false))
+      t.modState(State.cancelled set false)
     }
 
     def formClosed(state: State, props: Props): Callback =
@@ -84,7 +90,7 @@ object TodoForm {
 
     def updateDescription(e: ReactEventI) =
       // update TodoItem content
-      t.modState(s => s.copy(item = s.item.copy(content = e.target.value)))
+      t.modState(State.itemContent set e.target.value)
 
     def updatePriority(e: ReactEventI) = {
       // update TodoItem priority
@@ -93,7 +99,7 @@ object TodoForm {
         case p if p == TodoNormal.toString => TodoNormal
         case p if p == TodoLow.toString => TodoLow
       }
-      t.modState(s => s.copy(item = s.item.copy(priority = newPri)))
+      t.modState(State.itemPriority set newPri)
     }
 
     def render(p: Props, s: State) = {
